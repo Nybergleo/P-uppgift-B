@@ -1,0 +1,4 @@
+Pippi Långstrump,Astrid Lindgren,2022-12-01,N/A,0
+Emil i Lönneberga,Astrid Lindgren,2022-12-05,N/A,0
+Sagan om ringen,J.R.R Tolkien,2022-12-12,N/A,0
+Harry Potter,JK Rowling,Availible,N/A,0

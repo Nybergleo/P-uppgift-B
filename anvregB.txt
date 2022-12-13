@@ -1,0 +1,10 @@
+Elis,kalle@kun.se,3730303030,siegheil,U,0
+Gustav,Gusry@kth.se,0210302436,snorre,A,0
+Henning,hennish@kth.se,0410322436,lol,U,0
+Leo,leony@kth.se,0310302436,Kuk,A,0
+Lisa,lisalo@kth.se,0303032456,BBC,A,0
+Neger,Kuk,2334233423,Najeis.!,U,0
+Niklas,niklas@kth.se,1413141313,sdfsd,A,0
+Viktor,vich@kth.se,0210302736,Balle,U,0
+Wictor,wict@kth.se,323242554,Snopp,U,0
+Wille,wive@kth.se,4534234534,snoppis,U,0

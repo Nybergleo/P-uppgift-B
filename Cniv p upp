@@ -1,0 +1,40 @@
+FELHANTERING
+
+
+SELEKT GREJ
+T söka på Titel. IN  A
+F söka på Författare. IN
+L Låna bok. T IN A
+Å Återlämna bok. T IN
+N lägga in Ny bok.
+B ta Bort bok. IN T
+A lista Alla böcker.
+S Sluta.
+
+Vad vill du göra? F
+
+Vilken författare vill du söka efter? Martin
+Hittade 2 böcker
+Martin: Agile software development (utlånad)
+Martin: Clean Code
+Vad vill du göra? L
+Ange titeln på den bok du vill låna: Clean Code
+Vad vill du göra? s
+
+Välkommen åter!
+
+Tips: Skriv programmet i ett
+
+Välkommen till biblioteksprogrammet!
+	T söka på Titel klar
+	F söka på Författare. Kanaske klar beroende på alfabetiskt ordning
+	L Låna bok. klar
+	Å Återlämna bok. klar
+	N lägga in Ny bok.
+	B ta Bort bok.
+	A lista Alla böcker.
+	S Sluta.
+
+
+
+	Try except är bra för runtime
