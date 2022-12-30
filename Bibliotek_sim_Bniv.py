@@ -1,32 +1,27 @@
-import copy
-from datetime import datetime,date, timedelta  # Tidstillägg för lånande av böcker
+
+
+import pickle
+from datetime import datetime,date, timedelta
+
 
 from BokB import Bok  # klassen "Bok" importeras
 from AnvB import Anv
 
 
+
 # Allmänna funktioner
-def read_file(filnamn):  # Läser in filen
-    try:
-        fil_lista = []
-        fil = open(filnamn, "r")
-        fil_rader = fil.read().splitlines()
 
-        for rad in fil_rader:
-            if filnamn == "BibliotekB.txt":
-                rad_som_lista = rad.split(",")
-                bok = Bok(rad_som_lista[0], rad_som_lista[1], rad_som_lista[2],rad_som_lista[3],rad_som_lista[4])
-                fil_lista.append(bok)
-            elif filnamn == "anvregB.txt":
-                rad_som_lista = rad.split(",")
-                anv = Anv(rad_som_lista[0],rad_som_lista[1],rad_som_lista[2],rad_som_lista[3],rad_som_lista[4],rad_som_lista[5])
-                fil_lista.append(anv)
+def write(fil, listaAvA):
+    filp = open(fil, "wb")
+    pickle.dump(listaAvA, filp)
+    filp.close()
 
-        fil.close()
-        return fil_lista
-    except:
-        print("Ett oväntat problem har uppstått")
-        return None
+
+def load(fil):
+    filp = open(fil, "rb")
+    utlista = pickle.load(filp)
+    filp.close()
+    return utlista
 
 def list_sort(lst):
     sort_list = []
@@ -94,9 +89,9 @@ def borrow(bibliotek,bok,anv):
         print(f"Boken är utlånad. boken returneras {bibliotek[bok].status}")
 
 
-def return_bok(bibliotek, bok):
+def return_book(bibliotek, bok):
     if bibliotek[bok].return_bok() == True:  # Om boken är utlämnad returneras den.
-        write_file(bibliotek)
+        write("BibliotekB_test.txt",bibliotek)
         print(f"{bibliotek[bok].name} är nu återlämnad.")
     else:  # Boken är redan hemma och kan inte returneras.
         print(f"Boken är Tillgänglig och kan därför inte returneras.")
@@ -133,30 +128,35 @@ def log_in(anvregister):
 
 def add_bok(bibliotek,anv):  # Tillägg av ny bok.
     if anv.status == "A":
-        new_bok = Bok(input("Skriv in bokens titel: "), input("Skriv in bokens författare"), "Availible")
+        new_bok = Bok(input("Skriv in bokens titel: "), input("Skriv in bokens författare"), "Availible", "N/A",0)
         bibliotek.append(new_bok)
         print(f"boken {new_bok.name} är nu inlagd")
-        write_file(bibliotek,"BibliotekB.txt")
+        write("BibliotekB_test.txt",bibliotek)
     else:
         print("Ogiltigt alternativ")
         gen_menu(anv)
 
 def add_social(userregister): # bara siffror i personnr
-   social = input("Skriv person nr här: ")
+   social = input("Socialsecurity number formated YYMMDDXXX: ")
    try:
        int(social)
        if len(social) != 10:
-           print("Person nr ska skrivas i formatet ÅÅMMDDXXXX var god försök igen. Försök igen")
-           add_social()
+           retry = input("The format should be YYMMDDXXXX, try again or press 'E' to exit: ")
+           if retry == "E":
+               return
+           return add_social(userregister)
        for a in userregister:
            if social == a.social:
-                print("Det angivna personnumret är redan registrerat för ett konto")
-                return
+                choice = input("The given social security number is already registered. To register a different"
+                               " social security number press 'S', press anything else to exit")
+                if choice == "S":
+                    return add_social(userregister)
+                else:
+                    return
        return social
    except:
-       print("Person nr ska skrivas i formatet ÅÅMMDDXXXX var god försök igen. Försök igen")
+       print("Your social security number should be writen numericly YYMMDDXXXX")
        add_social(userregister)
-
 
 def add_usr_auth():
     user_auth = input("Vilken typ av användare önskas läggas till? A för Administratör eller U för User: ")
@@ -164,49 +164,55 @@ def add_usr_auth():
         return add_usr_auth()
     return user_auth
 
-def add_icke_spec(typ):
-    import re
-    input_str = input(f"Skriv {typ} här: ")
-    if not re.match("^[a-zA-Z@£€.!0-9]*$", input_str):
-        print("En otillåten symbol har använts!")
-        return add_icke_spec(typ)
-    return input_str
+def add_usr_password():
+    pass1 = input("Input password: ")
+    pass2 = input("Repeat your password: ")
+    if pass1 != pass2:
+        print("The passwords do not match, please try again.")
+        return add_usr_password()
+    else:
+        return pass1
 
-def add_usr(userregister,anv):
+def add_usr(userregister, anv):
     if anv.check_auth() == True:
-        name = add_icke_spec("namn")
-        mail = add_icke_spec("mail")
-        social = add_social(userregister)
-        password = add_icke_spec("lösenord")
-        auth = add_usr_auth()
-        new_us = Anv(name,mail,social,password,auth,0)
+        soc = add_social(userregister)
+        if soc == None:
+            return
+        new_us = Anv(input("Ange ditt förnamn: "), input("Ange din mail: "),soc, add_usr_password(),add_usr_auth(),0)
+        print(new_us)
         userregister.append(new_us)
         list_sort(userregister)
-        write_file(userregister, "anvregB.txt")
-        print(name,"är nu tillagd i användarregistret")
+        write("anvregB_test.txt",userregister)
+        print(new_us.name,"is now added to the register")
     else:
-        print("Ogilitgt alternativ, var god försök igen!")
+        print("Action does not exist")
         gen_menu(anv)
+
 
 def remove_book(bibliotek,anv):  # tar bort en bok.
 
     if anv.status == "A":
-        bok = search_bok()
+        bok = search_bok(bibliotek)
         if bok == None:
             return
         bibliotek.remove(bibliotek[bok])
-        write_file(bibliotek,"BibliotekB.txt")
+        write("BibliotekB_test.txt",bibliotek)
     else:
-        print("Ogiltigt alternativ")
+        print("Action does not exist")
         gen_menu(anv)
 
-def remv_usr(anvreg,anv):
+def remv_usr(anvreg,anv,library):
     if anv.check_auth() == True:
         rem_anv_ele = search_usr(anvreg,anv)
-        if anv.social != anvreg[rem_anv_ele].social:
+        if rem_anv_ele == None:
+            return
+        elif anv.social != anvreg[rem_anv_ele].social:
+            for book in library:
+                if book.user == anvreg[rem_anv_ele].name:
+                    return_book(library,book)
             print(f"{anvreg[rem_anv_ele].name} är nu borttagen.")
             anvreg.remove(anvreg[rem_anv_ele])
-            write_file(anvreg,"anvregB.txt")
+            write("anvregB_test.txt",anvreg)
         elif anv_auth.social == anvreg[rem_anv_ele].social:
             print("Du kan inte ta bort dig själv!")
     else:
@@ -216,18 +222,65 @@ def remv_usr(anvreg,anv):
 def search_usr(anvreg,användare):
     try:
         if användare.check_auth() == True:
-            sear_us = input("Vilken användare söker du?: ")
+            sear_us = input("What user are you searching?: ")
             for users in range(len(anvreg)):
                 if sear_us == anvreg[users].name:
                     return users  # Returnerar elementet boken är i listan
-                elif sear_us == "A":
+                elif sear_us == "E":
                     return
-            print("Användaren du angivit finns ej, försök igen eller tryck 'A' för att avsluta")
+            print("The user you are searching does not exist, try again or press 'E' to exit")
             return search_usr(anvreg,användare)
         print("Ej gilltigt alternativ")
         gen_menu()
     except:
         print("Ett oväntat fel har uppstått")
+
+
+def list_borrowed_books(library,userreg,us):
+    if us.check_auth()==True:
+        bor_bok = []
+        borrower = userreg[search_usr(userreg,us)].name
+        for bok in library:
+            if bok.user == borrower:
+                bor_bok.append(bok)
+        return bor_bok
+    else:
+        print("Action does not exist")
+        gen_menu(anv)
+
+
+def book_debt_calc(library):
+    for bok in library:
+        if isinstance(bok.status,date):
+            if int((bok.status - date.today()).days) < 0:
+                days_lt = int((bok.status - date.today()).days)
+                wks_late = int(days_lt)//7
+                bok.debt_calc(wks_late)
+                write("BibliotekB_test.txt",library)
+
+def usr_debt(usrreg,library):
+    for usr in usrreg:
+        us_debt = 0
+        for bok in library:
+            if usr.name == bok.user:
+                us_debt += bok.debt
+        usr.debt_calc(us_debt)
+        write("anvregB_test.txt",usrreg)
+
+def books_bor_by_usr(usrreg,library):
+
+    for usr in usrreg:
+        print(usr.name,usr.social)
+        for bok in library:
+            if usr.name == bok.user:
+                if bok.debt != 0:
+                    print(bok, "***")
+        usr.debt_calc(us_debt)
+        write("anvregB_test.txt",usrreg)
+
+
+
+
 
 
 
@@ -237,17 +290,18 @@ def search_usr(anvreg,användare):
 
 
 def main():
-    bibliotek = read_file("BibliotekB.txt")
-    anvreg = read_file("anvregB.txt")
+    bibliotek = load("BibliotekB_test.txt")
+    anvreg = load("anvregB_test.txt")
     anvreg = list_sort(anvreg)
     bibliotek = list_sort(bibliotek)
     action = 1
-    anv = log_in(anvreg)
-    print(anv.status)
+    #anv = log_in(anvreg)
+    anv = anvreg[3]  # Tillfällig grej för att slippa logga in
     print("Välkommen till Biblioteket!")
     gen_menu(anv)
-    print(type(anvreg))
     while action != "S":
+        book_debt_calc(bibliotek)
+        usr_debt(anvreg,bibliotek)
         action = input("Vad vill du göra?: ")
         if action == "T":
             bok = search_bok(bibliotek)  # returnerar elementet boken är i biblioteket
@@ -260,12 +314,12 @@ def main():
             bok = search_bok(bibliotek)
             if bok == None:
                 continue
-            borrow(bibliotek,bok)
+            borrow(bibliotek,bok,anv)
         elif action == "Å":
             bok = search_bok(bibliotek)
             if bok == None:
                 continue
-            return_bok(bibliotek,bok)
+            return_book(bibliotek,bok)
         elif action == "N":
             add_bok(bibliotek,anv)
         elif action == "B":
@@ -282,13 +336,7 @@ def main():
             print("Tack för idag, alla dina ändringar har blivit sparade!")
         else:
              gen_menu(anv)
-    write_file(bibliotek, "BibliotekB.txt")
-
-main()
-
-
-"""
-bibliotek = read_file("BibliotekB.txt")
-anvreg = read_file("anvregB.txt")
-print(bibliotek)
-print(anvreg)"""
+    #write_file(bibliotek, "BibliotekB.txt")
+bibliotek = load("BibliotekB_test.txt")
+for books in bibliotek:
+    print(str(books))
